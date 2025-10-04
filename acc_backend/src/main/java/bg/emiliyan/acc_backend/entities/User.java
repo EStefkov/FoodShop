@@ -2,7 +2,10 @@ package bg.emiliyan.acc_backend.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.annotation.Id;
+
+import java.sql.Timestamp;
 
 @Entity
 @Getter
@@ -42,5 +45,9 @@ public class User {
     private String firstName;
     @Column(name = "last_name", nullable = false)
     private String lastName;
+    @Column(name = "created_at", updatable = false)
+    @CreationTimestamp
+    private Timestamp createdAt;
+
 
 }

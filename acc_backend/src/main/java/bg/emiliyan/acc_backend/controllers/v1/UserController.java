@@ -17,15 +17,34 @@ public class UserController {
     private final UserService userService;
 
 
+
     @GetMapping
     public ResponseEntity<Page<UserDTO>> getAllUsers(Pageable pageable){
         return ResponseEntity.ok(userService.getAllUser(pageable));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserDTO> registerUser(@RequestBody User regUser){
-        UserDTO user = userService.registerUser(regUser);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<?> registerUser(@RequestBody User regUser){
+        try {
+            UserDTO user = userService.registerUser(regUser);
+            return ResponseEntity.status(201).body(user); // 201 Created
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(409)
+                .body(new ErrorResponse("Username already exists: " + regUser.getUsername()));
+        }
+    }
+
+    private record ErrorResponse(String message) {}
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id){
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody User user){
+        return ResponseEntity.ok(userService.updateUser(id, user));
     }
 
 

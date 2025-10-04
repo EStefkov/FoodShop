@@ -11,5 +11,6 @@ CREATE TABLE users (
                        postal_code VARCHAR(20),
                        profile_picture VARCHAR(255),
                        first_name VARCHAR(100) NOT NULL,
-                       last_name VARCHAR(100) NOT NULL
+                       last_name VARCHAR(100) NOT NULL,
+                       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
