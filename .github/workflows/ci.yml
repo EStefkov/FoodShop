@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  REPOSITORY_OWNER: ${{ secrets.REPOSITORY_OWNER }}
+  REPOSITORY_OWNER: estefkov # Hardcoding the lowercase version of your username
 
 jobs:
   build-and-test-backend:
@@ -50,8 +50,8 @@ jobs:
           context: ./acc_backend
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.REPOSITORY_OWNER }}/acc_backend:latest
-            ${{ env.REGISTRY }}/${{ env.REPOSITORY_OWNER }}/acc_backend:${{ github.sha }}
+            ${{ env.REGISTRY }}/estefkov/acc_backend:latest
+            ${{ env.REGISTRY }}/estefkov/acc_backend:${{ github.sha }}
           build-args: |
             DB_NAME=${{ secrets.DB_NAME }}
             DB_USER=${{ secrets.DB_USER }}
@@ -98,8 +98,8 @@ jobs:
           context: ./shop-frontend
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.REPOSITORY_OWNER }}/shop_frontend:latest
-            ${{ env.REGISTRY }}/${{ env.REPOSITORY_OWNER }}/shop_frontend:${{ github.sha }}
+            ${{ env.REGISTRY }}/estefkov/shop_frontend:latest
+            ${{ env.REGISTRY }}/estefkov/shop_frontend:${{ github.sha }}
           build-args: |
             GOOGLE_AUTH=${{ secrets.GOOGLE_AUTH }}
             OAUTH_ISSUER=${{ secrets.OAUTH_ISSUER }}

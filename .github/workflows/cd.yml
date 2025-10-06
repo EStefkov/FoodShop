@@ -10,7 +10,7 @@ on:
 env:
   KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
   REGISTRY: ghcr.io
-  REPOSITORY_OWNER: ${{ secrets.REPOSITORY_OWNER }}
+  REPOSITORY_OWNER: estefkov
 
 jobs:
   deploy:
@@ -44,8 +44,8 @@ jobs:
       - name: Deploy to Kubernetes
         run: |
           # Update the images with the new SHA
-          kubectl set image deployment/backend backend=${{ env.REGISTRY }}/${{ env.REPOSITORY_OWNER }}/acc_backend:${{ github.sha }} -n shop-app
-          kubectl set image deployment/frontend frontend=${{ env.REGISTRY }}/${{ env.REPOSITORY_OWNER }}/shop_frontend:${{ github.sha }} -n shop-app
+          kubectl set image deployment/backend backend=${{ env.REGISTRY }}/estefkov/acc_backend:${{ github.sha }} -n shop-app
+          kubectl set image deployment/frontend frontend=${{ env.REGISTRY }}/estefkov/shop_frontend:${{ github.sha }} -n shop-app
 
       - name: Verify deployment
         run: |
