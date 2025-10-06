@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  REPOSITORY_OWNER: estefkov # Hardcoding the lowercase version of your username
+  REPOSITORY_OWNER: estefkov
 
 jobs:
   build-and-test-backend:
