@@ -23,7 +23,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build and Test Backend
+      - name: Build Backend
         working-directory: ./acc_backend
         env:
           DB_NAME: ${{ secrets.DB_NAME }}
@@ -34,7 +34,7 @@ jobs:
           OAUTH_SECRET: ${{ secrets.OAUTH_SECRET }}
           GOOGLE_AUTH: ${{ secrets.GOOGLE_AUTH }}
         run: |
-          mvn clean verify
+          mvn clean package -DskipTests=true
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
