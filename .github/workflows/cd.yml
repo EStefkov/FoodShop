@@ -1,0 +1,53 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+    branches: [ main ]
+
+env:
+  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+  REGISTRY: ghcr.io
+  REPOSITORY_OWNER: ${{ secrets.REPOSITORY_OWNER }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        
+      - name: Configure kubectl
+        run: |
+          echo "$KUBE_CONFIG" | base64 -d > kubeconfig.yaml
+          export KUBECONFIG=kubeconfig.yaml
+
+      - name: Update Kubernetes secrets
+        run: |
+          kubectl create secret generic shop-secrets \
+            --namespace=shop-app \
+            --from-literal=DB_NAME=${{ secrets.DB_NAME }} \
+            --from-literal=DB_USER=${{ secrets.DB_USER }} \
+            --from-literal=DB_PASS=${{ secrets.DB_PASS }} \
+            --from-literal=OAUTH_ISSUER=${{ secrets.OAUTH_ISSUER }} \
+            --from-literal=OAUTH_ID=${{ secrets.OAUTH_ID }} \
+            --from-literal=OAUTH_SECRET=${{ secrets.OAUTH_SECRET }} \
+            --from-literal=GOOGLE_AUTH=${{ secrets.GOOGLE_AUTH }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy to Kubernetes
+        run: |
+          # Update the images with the new SHA
+          kubectl set image deployment/backend backend=${{ env.REGISTRY }}/${{ env.REPOSITORY_OWNER }}/acc_backend:${{ github.sha }} -n shop-app
+          kubectl set image deployment/frontend frontend=${{ env.REGISTRY }}/${{ env.REPOSITORY_OWNER }}/shop_frontend:${{ github.sha }} -n shop-app
+
+      - name: Verify deployment
+        run: |
+          kubectl rollout status deployment/backend -n shop-app
+          kubectl rollout status deployment/frontend -n shop-app
