@@ -13,9 +13,12 @@ spec:
       labels:
         app: frontend
     spec:
+      imagePullSecrets:
+        - name: ghcr-secret
       containers:
         - name: frontend
-          image: ghcr.io/EStefkov/shop_frontend:latest
+          image: ghcr.io/estefkov/shop_frontend:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
 ---
