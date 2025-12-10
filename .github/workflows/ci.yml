@@ -9,6 +9,7 @@ on:
 env:
   REGISTRY: ghcr.io
   REPOSITORY_OWNER: estefkov
+  OWNER_LOWERCASE: estefkov
 
 jobs:
   build-and-test-backend:
@@ -43,7 +44,7 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
+          username: ${{ env.OWNER_LOWERCASE }}
           password: ${{ secrets.PACKAGES_TOKEN }}
 
       - name: Build and push backend Docker image
@@ -53,8 +54,8 @@ jobs:
           context: ./acc_backend
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/acc_backend:latest
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/acc_backend:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.OWNER_LOWERCASE }}/acc_backend:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER_LOWERCASE }}/acc_backend:${{ github.sha }}
           build-args: |
             DB_NAME=${{ secrets.DB_NAME }}
             DB_USER=${{ secrets.DB_USER }}
@@ -94,7 +95,7 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
+          username: ${{ env.OWNER_LOWERCASE }}
           password: ${{ secrets.PACKAGES_TOKEN }}
 
       - name: Build and push frontend Docker image
@@ -104,8 +105,8 @@ jobs:
           context: ./shop-frontend
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/shop_frontend:latest
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/shop_frontend:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.OWNER_LOWERCASE }}/shop_frontend:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER_LOWERCASE }}/shop_frontend:${{ github.sha }}
           build-args: |
             GOOGLE_AUTH=${{ secrets.GOOGLE_AUTH }}
             OAUTH_ISSUER=${{ secrets.OAUTH_ISSUER }}

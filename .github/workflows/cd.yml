@@ -11,6 +11,8 @@ env:
   KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
   REGISTRY: ghcr.io
   REPOSITORY_OWNER: estefkov
+  OWNER_LOWERCASE: estefkov
+
 
 jobs:
   deploy:
