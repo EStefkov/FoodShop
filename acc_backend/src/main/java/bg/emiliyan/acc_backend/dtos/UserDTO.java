@@ -1,4 +1,4 @@
-package bg.emiliyan.acc_backend.dto;
+package bg.emiliyan.acc_backend.dtos;
 
 import lombok.*;
 
@@ -6,10 +6,8 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
 @Builder
 public class UserDTO {
-    private Long id;
     private String username;
     private String email;
     private String role;
@@ -21,5 +19,4 @@ public class UserDTO {
     private String profilePicture;
     private String firstName;
     private String lastName;
-    private java.sql.Timestamp createdAt;
 }

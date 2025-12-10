@@ -1,4 +1,4 @@
-package bg.emiliyan.acc_backend.dto;
+package bg.emiliyan.acc_backend.dtos;
 
 import lombok.*;
 
@@ -6,7 +6,6 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
 @Builder
 public class LoginRequest {
     private String login; // Can be username or email

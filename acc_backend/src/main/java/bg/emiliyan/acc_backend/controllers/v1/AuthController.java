@@ -1,6 +1,6 @@
 package bg.emiliyan.acc_backend.controllers.v1;
 
-import bg.emiliyan.acc_backend.dto.LoginRequest;
+import bg.emiliyan.acc_backend.dtos.LoginRequest;
 import bg.emiliyan.acc_backend.services.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

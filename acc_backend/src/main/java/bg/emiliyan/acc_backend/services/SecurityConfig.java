@@ -1,4 +1,4 @@
-package bg.emiliyan.acc_backend.config;
+package bg.emiliyan.acc_backend.services;
 
 import bg.emiliyan.acc_backend.security.JwtAuthFilter;
 import lombok.AllArgsConstructor;
@@ -11,7 +11,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -32,7 +34,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AccessDeniedHandler accessDeniedHandler, AuthenticationEntryPoint authenticationEntryPoint) throws Exception {
         http
                 // ✅ трябва cors() да е най-горе и с lambda конфигурация
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -46,8 +48,14 @@ public class SecurityConfig {
                                 "/api/v1/auth/google"
                         ).permitAll()
                         .anyRequest().authenticated()
+
                 )
+                .exceptionHandling()
+                    .accessDeniedHandler(accessDeniedHandler)
+                    .authenticationEntryPoint(authenticationEntryPoint)
+                .and()
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        ;
 
         return http.build();
     }

@@ -1,6 +1,6 @@
 package bg.emiliyan.acc_backend.services;
 
-import bg.emiliyan.acc_backend.dto.LoginRequest;
+import bg.emiliyan.acc_backend.dtos.LoginRequest;
 import bg.emiliyan.acc_backend.security.CookieUtils;
 import bg.emiliyan.acc_backend.security.JwtUtils;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
