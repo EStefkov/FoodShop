@@ -53,8 +53,8 @@ jobs:
           context: ./acc_backend
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ github.actor }}/acc_backend:latest
-            ${{ env.REGISTRY }}/${{ github.actor }}/acc_backend:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.OWNER_LOWERCASE }}/acc_backend:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER_LOWERCASE }}/acc_backend:${{ github.sha }}
           build-args: |
             DB_NAME=${{ secrets.DB_NAME }}
             DB_USER=${{ secrets.DB_USER }}
