@@ -1,6 +1,7 @@
 package bg.emiliyan.acc_backend.services;
 
 import bg.emiliyan.acc_backend.entities.User;
+import bg.emiliyan.acc_backend.exceptions.UserNotFoundByNameException;
 import bg.emiliyan.acc_backend.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,7 +26,7 @@ public class DatabaseUserDetailsService implements UserDetailsService {
             user = userRepository.findByEmail(login);
         }
         if (user == null) {
-            throw new UsernameNotFoundException("User not found with username/email: " + login);
+            throw new UserNotFoundByNameException(login);
         }
 
         return new org.springframework.security.core.userdetails.User(

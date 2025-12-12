@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.dao.DataIntegrityViolationException;
 
-import java.time.Instant;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -21,8 +20,14 @@ public class GlobalExceptionHandler {
     }
 
     // User Not Found
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
+    @ExceptionHandler(UserNotFoundByIdException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundByIdException ex) {
+        ErrorResponse body = new ErrorResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+    // User Not Found By Name
+    @ExceptionHandler(UserNotFoundByNameException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFoundByName(UserNotFoundByNameException ex) {
         ErrorResponse body = new ErrorResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }

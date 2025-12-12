@@ -1,6 +1,6 @@
 package bg.emiliyan.acc_backend.services;
 
-import bg.emiliyan.acc_backend.dtos.LoginRequest;
+import bg.emiliyan.acc_backend.dtos.LoginRequestDTO;
 import bg.emiliyan.acc_backend.security.CookieUtils;
 import bg.emiliyan.acc_backend.security.JwtUtils;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
@@ -35,7 +35,7 @@ public class AuthService {
     /**
      * Standard login with username/email and password.
      */
-    public ResponseEntity<LoginResponse> login(LoginRequest request, HttpServletResponse response) {
+    public ResponseEntity<LoginResponse> login(LoginRequestDTO request, HttpServletResponse response) {
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getLogin(), request.getPassword())
         );

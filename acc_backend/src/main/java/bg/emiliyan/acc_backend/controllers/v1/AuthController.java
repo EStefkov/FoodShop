@@ -1,6 +1,6 @@
 package bg.emiliyan.acc_backend.controllers.v1;
 
-import bg.emiliyan.acc_backend.dtos.LoginRequest;
+import bg.emiliyan.acc_backend.dtos.LoginRequestDTO;
 import bg.emiliyan.acc_backend.services.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> login(@RequestBody LoginRequestDTO request, HttpServletResponse response) {
         return authService.login(request, response);
     }
 

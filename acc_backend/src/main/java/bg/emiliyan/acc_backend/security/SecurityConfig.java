@@ -1,6 +1,5 @@
-package bg.emiliyan.acc_backend.services;
+package bg.emiliyan.acc_backend.security;
 
-import bg.emiliyan.acc_backend.security.JwtAuthFilter;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

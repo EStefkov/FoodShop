@@ -7,12 +7,11 @@ import bg.emiliyan.acc_backend.dtos.UserDTO;
 import bg.emiliyan.acc_backend.entities.User;
 import bg.emiliyan.acc_backend.exceptions.LastAdminException;
 import bg.emiliyan.acc_backend.exceptions.UnauthorizedAccessException;
-import bg.emiliyan.acc_backend.exceptions.UserNotFoundException;
+import bg.emiliyan.acc_backend.exceptions.UserNotFoundByIdException;
 import bg.emiliyan.acc_backend.exceptions.UsernameAlreadyExistsException;
 import bg.emiliyan.acc_backend.mappers.UserMapper;
 import bg.emiliyan.acc_backend.repositories.UserRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -49,7 +48,7 @@ public class UserService {
 
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("User with id: " + id + " does not exist!"));
+                .orElseThrow(() -> new UserNotFoundByIdException(id));
         return userMapper.userToUserDTO(user);
     }
 
@@ -69,7 +68,7 @@ public class UserService {
 
     public void deleteUser(Long id, String currentUserRole) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+                .orElseThrow(() -> new UserNotFoundByIdException(id));
 
         // Проверка: ако потребителят е админ
         if ("ADMIN".equals(user.getRole())) {
