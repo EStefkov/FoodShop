@@ -104,8 +104,8 @@ jobs:
           context: ./shop-frontend
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ github.actor }}/shop_frontend:latest
-            ${{ env.REGISTRY }}/${{ github.actor }}/shop_frontend:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.OWNER_LOWERCASE }}/shop_frontend:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER_LOWERCASE }}/shop_frontend:${{ github.sha }}
           build-args: |
             GOOGLE_AUTH=${{ secrets.GOOGLE_AUTH }}
             OAUTH_ISSUER=${{ secrets.OAUTH_ISSUER }}
