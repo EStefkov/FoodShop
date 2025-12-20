@@ -1,8 +1,10 @@
 package bg.emiliyan.acc_backend.services;
 
 import bg.emiliyan.acc_backend.dtos.RegisterUserDTO;
+import bg.emiliyan.acc_backend.entities.Role;
 import bg.emiliyan.acc_backend.entities.User;
 import bg.emiliyan.acc_backend.exceptions.UsernameAlreadyExistsException;
+import bg.emiliyan.acc_backend.repositories.RoleRepository;
 import bg.emiliyan.acc_backend.repositories.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,6 +14,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,6 +27,9 @@ class UserServiceTest {
     private UserRepository userRepository;
 
     @Mock
+    private RoleRepository roleRepository;
+
+    @Mock
     private PasswordEncoder passwordEncoder;
 
     @InjectMocks
@@ -31,13 +37,12 @@ class UserServiceTest {
 
     @Test
     void shouldCreateUserSuccessfully() {
-
-        // 1️⃣ Създаваме DTO с валидни данни
+        // DTO
         RegisterUserDTO dto = RegisterUserDTO.builder()
                 .username("testuser")
-                .password("Password1")  // трябва да мине regex-а
+                .password("Password1")
                 .email("test@example.com")
-                .role("USER")
+                .role(List.of("ROLE_USER"))
                 .firstName("Test")
                 .lastName("User")
                 .city("Sofia")
@@ -45,28 +50,33 @@ class UserServiceTest {
                 .postalCode("1000")
                 .build();
 
+        // mock за password encoder
         Mockito.when(passwordEncoder.encode(Mockito.any(CharSequence.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        // 2️⃣ Създаваме User entity, което ще върне репозитория
-        User savedUser = new User();
-        savedUser.setEmail(dto.getEmail());
-        savedUser.setUsername(dto.getUsername());
-        //savedUser.setRole(dto.getRole());
+        // mock за roleRepository
+        Role userRole = new Role();
+        userRole.setRole("ROLE_USER");
+        Mockito.when(roleRepository.findByRole("ROLE_USER"))
+                .thenReturn(Optional.of(userRole));
 
+        // mock за userRepository
+        User savedUser = new User();
+        savedUser.setUsername(dto.getUsername());
+        savedUser.setEmail(dto.getEmail());
         Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(savedUser);
 
-        // 3️⃣ Викаме метода
+        // call
         var result = userService.registerUser(dto);
 
-        // 4️⃣ Проверки
+        // assertions
         assertNotNull(result);
-        assertEquals(dto.getEmail(), result.getEmail());
         assertEquals(dto.getUsername(), result.getUsername());
+        assertEquals(dto.getEmail(), result.getEmail());
 
-        Mockito.verify(userRepository, times(1))
-                .save(Mockito.any(User.class));
+        Mockito.verify(userRepository, times(1)).save(Mockito.any(User.class));
     }
+
 
     @Test
     void shouldThrowExceptionWhenEmailAlreadyExists() {
@@ -74,7 +84,7 @@ class UserServiceTest {
                 .username("existinguser")
                 .password("Password1")
                 .email("test@example.com")
-                .role("USER")
+                .role(List.of("ROLE_USER"))
                 .firstName("Existing")
                 .lastName("User")
                 .city("Sofia")
