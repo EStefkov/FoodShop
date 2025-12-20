@@ -2,6 +2,8 @@ package bg.emiliyan.acc_backend.dtos;
 
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -10,7 +12,7 @@ import lombok.*;
 public class UserDTO {
     private String username;
     private String email;
-    private String role;
+    private List<String> role;
     private String number;
     private String address;
     private String city;

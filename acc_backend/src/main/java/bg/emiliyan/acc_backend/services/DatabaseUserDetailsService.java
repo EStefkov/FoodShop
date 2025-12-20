@@ -2,8 +2,10 @@ package bg.emiliyan.acc_backend.services;
 
 import bg.emiliyan.acc_backend.entities.User;
 import bg.emiliyan.acc_backend.exceptions.UserNotFoundByNameException;
+import bg.emiliyan.acc_backend.repositories.*;
 import bg.emiliyan.acc_backend.repositories.UserRepository;
 import lombok.AllArgsConstructor;
+
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,6 +19,7 @@ import java.util.Collections;
 public class DatabaseUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
     @Override
     public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
@@ -32,7 +35,9 @@ public class DatabaseUserDetailsService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole()))
+                user.getRoles().stream()
+                        .map(role -> new SimpleGrantedAuthority(role.getRole()))
+                        .toList()
         );
     }
 }

@@ -52,7 +52,7 @@ class UserServiceTest {
         User savedUser = new User();
         savedUser.setEmail(dto.getEmail());
         savedUser.setUsername(dto.getUsername());
-        savedUser.setRole(dto.getRole());
+        //savedUser.setRole(dto.getRole());
 
         Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(savedUser);
 

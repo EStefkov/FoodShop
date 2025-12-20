@@ -5,6 +5,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Builder
 public class UpdateUserDTO {
@@ -15,7 +17,7 @@ public class UpdateUserDTO {
     @Email
     private String email;
 
-    private String role;
+    private List<String> role;
 
     private String number;
     private String address;

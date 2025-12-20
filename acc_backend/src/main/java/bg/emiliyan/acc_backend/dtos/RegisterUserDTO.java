@@ -8,6 +8,8 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.checkerframework.common.aliasing.qual.Unique;
 
+import java.util.List;
+
 @Data
 @Builder
 @Valid
@@ -29,8 +31,7 @@ public class RegisterUserDTO {
     @Email(message = "Email should be valid")
     private String email;
 
-    @NotBlank
-    private String role;
+    private List<String> role;
 
     @NotBlank
     private String firstName;

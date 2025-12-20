@@ -6,6 +6,7 @@ import bg.emiliyan.acc_backend.dtos.UpdateUserDTO;
 import bg.emiliyan.acc_backend.dtos.UserDTO;
 import bg.emiliyan.acc_backend.entities.User;
 import bg.emiliyan.acc_backend.services.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -44,14 +45,13 @@ public class UserController {
     private record ErrorResponse(String message) {}
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id, Authentication authentication) {
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id, Authentication authentication, HttpServletResponse response) {
         String role = authentication.getAuthorities().stream()
                 .findFirst()
                 .map(GrantedAuthority::getAuthority)
                 .orElse("");
 
-        userService.deleteUser(id, role);
+        userService.deleteUser(id, role, response);
         return ResponseEntity.noContent().build();
     }
 

@@ -4,18 +4,25 @@ import bg.emiliyan.acc_backend.dtos.GetAllUserDTO;
 import bg.emiliyan.acc_backend.dtos.RegisterUserDTO;
 import bg.emiliyan.acc_backend.dtos.UpdateUserDTO;
 import bg.emiliyan.acc_backend.dtos.UserDTO;
+import bg.emiliyan.acc_backend.entities.Role;
 import bg.emiliyan.acc_backend.entities.User;
 import bg.emiliyan.acc_backend.exceptions.LastAdminException;
 import bg.emiliyan.acc_backend.exceptions.UnauthorizedAccessException;
 import bg.emiliyan.acc_backend.exceptions.UserNotFoundByIdException;
 import bg.emiliyan.acc_backend.exceptions.UsernameAlreadyExistsException;
 import bg.emiliyan.acc_backend.mappers.UserMapper;
+import bg.emiliyan.acc_backend.repositories.RoleRepository;
 import bg.emiliyan.acc_backend.repositories.UserRepository;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -23,6 +30,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 
@@ -32,7 +40,7 @@ public class UserService {
                         .id(user.getId())
                         .username(user.getUsername())
                         .email(user.getEmail())
-                        .role(user.getRole())
+                        .role(user.getRoleNames()) // <- всички роли
                         .number(user.getNumber())
                         .address(user.getAddress())
                         .city(user.getCity())
@@ -66,34 +74,46 @@ public class UserService {
 
     }
 
-    public void deleteUser(Long id, String currentUserRole) {
+    public void deleteUser(Long id, String currentUserRole, HttpServletResponse response) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundByIdException(id));
 
-        // Проверка: ако потребителят е админ
-        if ("ADMIN".equals(user.getRole())) {
-            // Проверка за последен админ
-            long adminCount = userRepository.countByRole("ADMIN");
+        // Проверка за админ
+        if (user.getRoleNames().contains("ROLE_ADMIN")) {
+            long adminCount = userRepository.countByRoleName("ROLE_ADMIN");
             if (adminCount <= 1) {
                 throw new LastAdminException(currentUserRole);
             }
 
-            // Ако текущият потребител не е админ, забраняваме
-            if (!"ADMIN".equals(currentUserRole)) {
+            if (!"ROLE_ADMIN".equals(currentUserRole)) {
                 throw new UnauthorizedAccessException();
             }
         }
 
+        // Изтриване на потребителя
         userRepository.deleteById(id);
+
+        // Изтриване на JWT cookie
+        ResponseCookie cookie = ResponseCookie.from("access_token", "")
+                .httpOnly(true)
+                .path("/")
+                .maxAge(0)
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 
 
     public UserDTO updateUser(Long id, UpdateUserDTO dto) {
-        User user = userRepository.findUserById(id);
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         userMapper.updateUserFromDTO(dto, user);
         userRepository.save(user);
         return userMapper.userToUserDTO(user);
     }
+
+
 
 
     // helping method
@@ -102,7 +122,7 @@ public class UserService {
 
                 .username(user.getUsername())
                 .email(user.getEmail())
-                .role(user.getRole())
+                .role(user.getRoleNames())
                 .number(user.getNumber())
                 .address(user.getAddress())
                 .city(user.getCity())
@@ -116,11 +136,20 @@ public class UserService {
     }
 
     private  User RegisterUserMapDTO(RegisterUserDTO user){
+
+        Set<Role> roles = user.getRole().stream() // List<String>
+                .map(roleName -> roleRepository.findByRole(roleName)
+                        .orElseThrow(() -> new RuntimeException("Role not found: " + roleName)))
+                .collect(Collectors.toSet());
+//
+//        Role userRole = roleRepository.findByName("ROLE_USER")
+//                .orElseThrow(() -> new RuntimeException("Default role USER not found"));
+
         return User.builder()
                 .username(user.getUsername())
                 .password(passwordEncoder.encode(user.getPassword()))
                 .email(user.getEmail())
-                .role(user.getRole())
+                .roles(roles)
                 .number(user.getNumber())
                 .address(user.getAddress())
                 .city(user.getCity())
