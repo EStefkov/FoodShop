@@ -37,6 +37,9 @@ jobs:
           OAUTH_ID: ${{ secrets.OAUTH_ID }}
           OAUTH_SECRET: ${{ secrets.OAUTH_SECRET }}
           GOOGLE_AUTH: ${{ secrets.GOOGLE_AUTH }}
+          CLOUD_NAME: ${{ secrets.CLOUD_NAME }}
+          CLOUD_USER: ${{ secrets.CLOUD_USER }}
+          CLOUD_PASS: ${{ secrets.CLOUD_PASS }}
         run: mvn clean verify
 
       - name: Login to GitHub Container Registry

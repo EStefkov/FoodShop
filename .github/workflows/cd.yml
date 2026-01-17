@@ -5,14 +5,10 @@ on:
     workflows: ["CI"]
     types:
       - completed
-    branches: [ main ]
 
 env:
   KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
   REGISTRY: ghcr.io
-  REPOSITORY_OWNER: estefkov
-  OWNER_LOWERCASE: estefkov
-
 
 jobs:
   deploy:
@@ -24,7 +20,7 @@ jobs:
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
-        
+
       - name: Configure kubectl
         run: |
           echo "$KUBE_CONFIG" | base64 -d > kubeconfig.yaml
@@ -43,13 +39,12 @@ jobs:
             --from-literal=GOOGLE_AUTH=${{ secrets.GOOGLE_AUTH }} \
             --dry-run=client -o yaml | kubectl apply -f -
 
-      - name: Deploy to Kubernetes
+      - name: Deploy backend
         run: |
-          # Update the images with the new SHA
-          kubectl set image deployment/backend backend=${{ env.REGISTRY }}/estefkov/acc_backend:${{ github.sha }} -n shop-app
-          kubectl set image deployment/frontend frontend=${{ env.REGISTRY }}/estefkov/shop_frontend:${{ github.sha }} -n shop-app
-
-      - name: Verify deployment
-        run: |
+          kubectl set image deployment/backend backend=${{ env.REGISTRY }}/$GITHUB_ACTOR/acc_backend:${{ github.event.workflow_run.head_sha }} -n shop-app
           kubectl rollout status deployment/backend -n shop-app
+
+      - name: Deploy frontend
+        run: |
+          kubectl set image deployment/frontend frontend=${{ env.REGISTRY }}/$GITHUB_ACTOR/shop_frontend:${{ github.event.workflow_run.head_sha }} -n shop-app
           kubectl rollout status deployment/frontend -n shop-app

@@ -3,7 +3,6 @@ package bg.emiliyan.acc_backend.entities;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.data.annotation.Id;
 
 import java.sql.Timestamp;
 import java.util.HashSet;
@@ -18,7 +17,6 @@ import java.util.Set;
 @Table(name = "users")
 public class User {
 
-    @jakarta.persistence.Id
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
