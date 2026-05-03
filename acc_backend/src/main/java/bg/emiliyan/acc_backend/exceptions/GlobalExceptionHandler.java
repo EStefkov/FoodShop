@@ -79,4 +79,15 @@ public class GlobalExceptionHandler {
                 "Internal server error: " + ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
+
+    @ExceptionHandler(GoogleAccountAlreadyLinked.class)
+    public ResponseEntity<ErrorResponse> handleGoogleAlreadyLinked(GoogleAccountAlreadyLinked ex) {
+        ErrorResponse body = new ErrorResponse(HttpStatus.CONFLICT.value(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
+    @ExceptionHandler(GoogleAccountAlreadyLinkedException.class)
+    public ResponseEntity<ErrorResponse>  handleGoogleLinkedAccount (GoogleAccountAlreadyLinkedException ex){
+        ErrorResponse body = new ErrorResponse(HttpStatus.CONFLICT.value(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
 }

@@ -145,10 +145,13 @@ public class UserService {
             throw new UserNotFoundByNameException(username);
         }
 
-        // Check googleId not already taken by another account
+        if (user.getGoogleId() != null) {
+            throw new GoogleAccountAlreadyLinkedException();
+        }
+
         User existingGoogle = userRepository.findByGoogleId(googleId);
-        if (existingGoogle != null && !existingGoogle.getUsername().equals(username)) {
-            throw new RuntimeException("This Google account is already linked to another user");
+        if (existingGoogle != null) {
+            throw new GoogleAccountAlreadyLinked();
         }
 
         user.setGoogleId(googleId);
