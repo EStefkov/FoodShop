@@ -1,0 +1,254 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+
+:root {
+  --ink: #0f0e0d;
+  --ink-soft: #4a4845;
+  --ink-muted: #9a9790;
+  --paper: #f5f2ed;
+  --paper-warm: #ede9e2;
+  --paper-card: #ffffff;
+  --accent: #e84c1e;
+  --accent-soft: #fde8e1;
+  --google-blue: #1a73e8;
+  --google-soft: #e8f0fe;
+  --border: #e2ddd6;
+  --radius: 12px;
+  --shadow: 0 2px 16px rgba(15,14,13,0.07);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--paper);
+  font-family: 'DM Sans', sans-serif;
+  color: var(--ink);
+}
+
+/* ── Header ── */
+.profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2.5rem;
+  height: 60px;
+  background: var(--ink);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.profile-brand {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+.profile-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile-login-badge {
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 100px;
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 0.01em;
+}
+
+.profile-logout-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 6px 16px;
+  border-radius: 100px;
+  border: 1.5px solid rgba(255,255,255,0.3);
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s;
+}
+.profile-logout-btn:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.6);
+}
+
+/* ── Main ── */
+.profile-main {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 4rem;
+}
+
+/* ── Hero ── */
+.profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 3rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1.5px solid var(--border);
+}
+
+.profile-avatar {
+  flex-shrink: 0;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--ink);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 4px var(--paper), 0 0 0 6px var(--border);
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-initials {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+.profile-hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.profile-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 2.2rem;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.profile-username {
+  font-size: 0.9rem;
+  color: var(--ink-muted);
+  font-weight: 400;
+}
+
+.profile-roles {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.profile-role-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 4px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* ── Details section ── */
+.profile-section-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 1.25rem;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.profile-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 1.1rem 1.4rem;
+  background: var(--paper-card);
+  transition: background 0.15s;
+}
+.profile-field:hover {
+  background: var(--paper-warm);
+}
+
+.profile-field-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.profile-field-value {
+  font-size: 0.97rem;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+.profile-field-empty {
+  color: var(--ink-muted);
+  font-style: italic;
+  font-size: 0.88rem;
+}
+
+/* ── States ── */
+.profile-loading,
+.profile-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  color: var(--ink-muted);
+}
+
+.profile-error {
+  color: var(--accent);
+}
+
+/* ── Responsive ── */
+@media (max-width: 560px) {
+  .profile-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+  }
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-name {
+    font-size: 1.7rem;
+  }
+  .profile-header {
+    padding: 0 1.25rem;
+  }
+  .profile-role-tag--google {
+  background: #e6f4ea;
+  color: #1e7e34;
+}
+}

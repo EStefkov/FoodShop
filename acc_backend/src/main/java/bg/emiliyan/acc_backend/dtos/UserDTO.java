@@ -21,4 +21,5 @@ public class UserDTO {
     private String profilePicture;
     private String firstName;
     private String lastName;
+    private boolean googleLinked;
 }

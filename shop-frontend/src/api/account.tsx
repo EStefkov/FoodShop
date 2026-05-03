@@ -1,35 +1,49 @@
-import axios from 'axios';
+// import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.API_BASE_URL as string||'http://localhost:8080/api';
+// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string || 'http://localhost:8080/api';
 
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true,
-});
+// const api = axios.create({
+//   baseURL: API_BASE_URL,
+//   withCredentials: true,
+// });
 
-interface LoginCredentials {
-  login: string; // can be either email or username
-  password: string;
-}
+// export interface UserDTO {
+//   username: string;
+//   email: string;
+//   role: string[];
+//   number: string;
+//   address: string;
+//   city: string;
+//   country: string;
+//   postalCode: string;
+//   profilePicture: string;
+//   firstName: string;
+//   lastName: string;
+// }
 
-export const account = {
-  login: async (login: string, password: string) => {
-    const credentials: LoginCredentials = {
-      login,
-      password
-    };
-    return api.post('/v1/auth/login', credentials);
-  },
-   googleLogin: (token: string) =>
-    api.post("/v1/auth/google", { token }),
-  register: async (userData: {
-    email: string;
-    username: string;
-    password: string;
-  }) => {
-    return api.post('/v1/auth/register', userData);
-  },
-  logout: async () => {
-    return api.post('/v1/auth/logout');
-  }
-};
+// interface LoginCredentials {
+//   login: string;
+//   password: string;
+// }
+
+// export const account = {
+//   login: async (login: string, password: string) => {
+//     const credentials: LoginCredentials = { login, password };
+//     return api.post('/v1/auth/login', credentials);
+//   },
+//   googleLogin: (token: string) =>
+//     api.post('/v1/auth/google', { token }),
+//   register: async (userData: {
+//     email: string;
+//     username: string;
+//     password: string;
+//   }) => {
+//     return api.post('/v1/auth/register', userData);
+//   },
+//   logout: async () => {
+//     return api.post('/v1/auth/logout');
+//   },
+//   // Fetch the currently logged-in user's profile
+//   getMe: async (username: string) =>
+//     api.get<UserDTO>(`/v1/users/${username}`),
+// };

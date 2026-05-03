@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 @org.springframework.stereotype.Repository
 public interface UserRepository extends JpaRepository<User, Long>{
 
@@ -18,5 +20,6 @@ public interface UserRepository extends JpaRepository<User, Long>{
     @Query("SELECT COUNT(u) FROM User u JOIN u.roles r WHERE r.role = :roleName")
     long countByRoleName(@Param("roleName") String roleName);
     boolean existsByEmail(String email);
+    User findByGoogleId(String googleId);
 
 }

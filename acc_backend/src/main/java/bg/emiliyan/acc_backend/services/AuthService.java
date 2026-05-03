@@ -1,6 +1,10 @@
 package bg.emiliyan.acc_backend.services;
 
 import bg.emiliyan.acc_backend.dtos.LoginRequestDTO;
+import bg.emiliyan.acc_backend.entities.Role;
+import bg.emiliyan.acc_backend.entities.User;
+import bg.emiliyan.acc_backend.repositories.RoleRepository;
+import bg.emiliyan.acc_backend.repositories.UserRepository;
 import bg.emiliyan.acc_backend.security.CookieUtils;
 import bg.emiliyan.acc_backend.security.JwtUtils;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
@@ -18,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Set;
 
 /**
  * Service layer handling authentication logic — login, Google OAuth2, and logout.
@@ -31,6 +36,8 @@ public class AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
     /**
      * Standard login with username/email and password.
@@ -53,10 +60,8 @@ public class AuthService {
      */
     public ResponseEntity<?> googleLogin(GoogleTokenRequest request, HttpServletResponse response) {
         try {
-            var jsonFactory = JacksonFactory.getDefaultInstance();
-            var transport = GoogleNetHttpTransport.newTrustedTransport();
-
-            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory)
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
+                    GoogleNetHttpTransport.newTrustedTransport(), JacksonFactory.getDefaultInstance())
                     .setAudience(Collections.singletonList(googleClientId))
                     .build();
 
@@ -66,23 +71,66 @@ public class AuthService {
             }
 
             GoogleIdToken.Payload payload = idToken.getPayload();
-            String email = payload.getEmail();
-            String name = (String) payload.get("name");
 
-            // TODO: Провери дали user-ът вече съществува и ако не, го създай.
-            String jwt = jwtUtils.generateToken(email);
+            if (!payload.getEmailVerified()) {
+                return ResponseEntity.badRequest().body("Google email not verified");
+            }
 
-            ResponseCookie cookie = CookieUtils.createJwtCookie(jwt);
-            response.addHeader("Set-Cookie", cookie.toString());
+            String email    = payload.getEmail();
+            String name     = (String) payload.get("name");
+            String picture  = (String) payload.get("picture");
+            String googleId = payload.getSubject();
 
-            return ResponseEntity.ok(new LoginResponse("Google login successful", jwt, email));
+            User user;
+
+            // 1. Known Google user — fastest path
+            User byGoogleId = userRepository.findByGoogleId(googleId);
+            if (byGoogleId != null) {
+                user = byGoogleId;
+
+                // 2. Email already exists — link Google to that account
+            } else {
+                User byEmail = userRepository.findByEmail(email);
+                if (byEmail != null) {
+                    byEmail.setGoogleId(googleId);
+                    if (byEmail.getProfilePicture() == null) {
+                        byEmail.setProfilePicture(picture);
+                    }
+                    user = userRepository.save(byEmail);
+
+                    // 3. Brand new user
+                } else {
+                    Role userRole = roleRepository.findByRole("ROLE_USER")
+                            .orElseThrow(() -> new RuntimeException("Default role not found"));
+
+                    String firstName = name != null ? name.split(" ")[0] : "";
+                    String lastName  = name != null && name.contains(" ") ? name.split(" ", 2)[1] : "";
+
+                    User newUser = User.builder()
+                            .email(email)
+                            .username(email)
+                            .googleId(googleId)
+                            .firstName(firstName)
+                            .lastName(lastName)
+                            .profilePicture(picture)
+                            .password("")
+                            .roles(Set.of(userRole))
+                            .build();
+
+                    user = userRepository.save(newUser);
+                }
+            }
+
+            String jwt = jwtUtils.generateToken(user.getUsername());
+            response.addHeader("Set-Cookie", CookieUtils.createJwtCookie(jwt).toString());
+
+            return ResponseEntity.ok(new LoginResponse("Google login successful", jwt, user.getUsername()));
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body("Google login failed: " + e.getMessage());
         }
     }
-
     /**
      * Logout by invalidating JWT cookie.
      */

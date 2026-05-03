@@ -6,10 +6,7 @@ import bg.emiliyan.acc_backend.dtos.UpdateUserDTO;
 import bg.emiliyan.acc_backend.dtos.UserDTO;
 import bg.emiliyan.acc_backend.entities.Role;
 import bg.emiliyan.acc_backend.entities.User;
-import bg.emiliyan.acc_backend.exceptions.LastAdminException;
-import bg.emiliyan.acc_backend.exceptions.UnauthorizedAccessException;
-import bg.emiliyan.acc_backend.exceptions.UserNotFoundByIdException;
-import bg.emiliyan.acc_backend.exceptions.UsernameAlreadyExistsException;
+import bg.emiliyan.acc_backend.exceptions.*;
 import bg.emiliyan.acc_backend.mappers.UserMapper;
 import bg.emiliyan.acc_backend.repositories.RoleRepository;
 import bg.emiliyan.acc_backend.repositories.UserRepository;
@@ -131,8 +128,34 @@ public class UserService {
                 .profilePicture(user.getProfilePicture())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
-
+                .googleLinked(user.getGoogleId() != null)
                 .build();
+    }
+    public UserDTO getUserByUsername(String username) {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new UserNotFoundByNameException(username);
+        }
+        return userMapper.userToUserDTO(user);
+    }
+
+    public UserDTO linkGoogleAccount(String username, String googleId, String picture) {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new UserNotFoundByNameException(username);
+        }
+
+        // Check googleId not already taken by another account
+        User existingGoogle = userRepository.findByGoogleId(googleId);
+        if (existingGoogle != null && !existingGoogle.getUsername().equals(username)) {
+            throw new RuntimeException("This Google account is already linked to another user");
+        }
+
+        user.setGoogleId(googleId);
+        if (user.getProfilePicture() == null) {
+            user.setProfilePicture(picture);
+        }
+        return userMapper.userToUserDTO(userRepository.save(user));
     }
 
     private  User RegisterUserMapDTO(RegisterUserDTO user){
