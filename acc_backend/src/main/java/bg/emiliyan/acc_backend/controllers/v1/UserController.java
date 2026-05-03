@@ -11,10 +11,11 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.Value;
+
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -28,13 +29,19 @@ import java.util.Collections;
 
 @RestController
 @RequestMapping("/api/v1/users")
-@AllArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
     @Value("${GOOGLE_CLIENT_ID}")
     private String googleClientId;
+
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+
 
 
 

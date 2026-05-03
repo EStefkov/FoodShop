@@ -19,6 +19,7 @@ export interface UserDTO {
   profilePicture: string;
   firstName: string;
   lastName: string;
+  googleLinked: boolean; 
 }
 
 interface LoginCredentials {
