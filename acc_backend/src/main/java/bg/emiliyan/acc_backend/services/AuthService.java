@@ -3,16 +3,22 @@ package bg.emiliyan.acc_backend.services;
 import bg.emiliyan.acc_backend.dtos.LoginRequestDTO;
 import bg.emiliyan.acc_backend.entities.Role;
 import bg.emiliyan.acc_backend.entities.User;
+import bg.emiliyan.acc_backend.exceptions.GoogleAccountLinkRequiredException;
+import bg.emiliyan.acc_backend.exceptions.GoogleEmailNotVerifiedException;
+import bg.emiliyan.acc_backend.exceptions.InvalidGoogleTokenException;
 import bg.emiliyan.acc_backend.repositories.RoleRepository;
 import bg.emiliyan.acc_backend.repositories.UserRepository;
-import bg.emiliyan.acc_backend.security.CookieUtils;
-import bg.emiliyan.acc_backend.security.JwtUtils;
+import bg.emiliyan.acc_backend.security.cookie.CookieUtils;
+import bg.emiliyan.acc_backend.security.jwt.JwtUtils;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +27,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.Set;
 
@@ -31,6 +38,8 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class AuthService {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+
     @Value("${GOOGLE_CLIENT_ID}")
     private String googleClientId;
 
@@ -38,6 +47,17 @@ public class AuthService {
     private final JwtUtils jwtUtils;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+
+    // Built once (verifier is thread-safe and relatively expensive to construct).
+    private GoogleIdTokenVerifier googleIdTokenVerifier;
+
+    @PostConstruct
+    private void initGoogleVerifier() throws GeneralSecurityException, java.io.IOException {
+        this.googleIdTokenVerifier = new GoogleIdTokenVerifier.Builder(
+                GoogleNetHttpTransport.newTrustedTransport(), JacksonFactory.getDefaultInstance())
+                .setAudience(Collections.singletonList(googleClientId))
+                .build();
+    }
 
     /**
      * Standard login with username/email and password.
@@ -57,99 +77,90 @@ public class AuthService {
 
     /**
      * Google login using OAuth2 token verification.
+     *
+     * Security note: if a local account already exists with the same email but is
+     * NOT yet linked to this Google identity, we deliberately do NOT auto-link it.
+     * Auto-linking on email match is vulnerable to account pre-hijacking: an attacker
+     * could register a normal account with the victim's email first, then silently
+     * gain a parallel login path once the victim signs in with Google. Linking must
+     * instead go through an authenticated flow (see UserService#linkGoogleAccount)
+     * where the user proves ownership of the existing account first.
+     *
+     * Errors are surfaced as exceptions and handled centrally by GlobalExceptionHandler,
+     * consistent with the rest of the codebase (see UserService).
      */
-    public ResponseEntity<?> googleLogin(GoogleTokenRequest request, HttpServletResponse response) {
+    public ResponseEntity<LoginResponse> googleLogin(GoogleTokenRequest request, HttpServletResponse response) {
+        GoogleIdToken idToken;
         try {
-            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
-                    GoogleNetHttpTransport.newTrustedTransport(), JacksonFactory.getDefaultInstance())
-                    .setAudience(Collections.singletonList(googleClientId))
+            idToken = googleIdTokenVerifier.verify(request.token());
+        } catch (Exception e) {
+            // Never leak verifier internals (network/cert/parsing details) to the client.
+            log.warn("Google token verification threw an exception", e);
+            throw new InvalidGoogleTokenException();
+        }
+
+        if (idToken == null) {
+            throw new InvalidGoogleTokenException();
+        }
+
+        GoogleIdToken.Payload payload = idToken.getPayload();
+
+        if (!Boolean.TRUE.equals(payload.getEmailVerified())) {
+            throw new GoogleEmailNotVerifiedException();
+        }
+
+        String email = payload.getEmail();
+        String name = (String) payload.get("name");
+        String picture = (String) payload.get("picture");
+        String googleId = payload.getSubject();
+
+        User user;
+
+        // 1. Known Google user — fastest path
+        User byGoogleId = userRepository.findByGoogleId(googleId);
+        if (byGoogleId != null) {
+            user = byGoogleId;
+
+        } else {
+            // 2. An account with this email already exists but isn't linked to Google.
+            //    Refuse to auto-link — see javadoc above.
+            User byEmail = userRepository.findByEmail(email);
+            if (byEmail != null) {
+                throw new GoogleAccountLinkRequiredException();
+            }
+
+            // 3. Brand new user
+            Role userRole = roleRepository.findByRole("ROLE_USER")
+                    .orElseThrow(() -> new RuntimeException("Default role not found"));
+
+            String firstName = name != null ? name.split(" ")[0] : "";
+            String lastName = name != null && name.contains(" ") ? name.split(" ", 2)[1] : "";
+
+            User newUser = User.builder()
+                    .email(email)
+                    .username(email)
+                    .googleId(googleId)
+                    .firstName(firstName)
+                    .lastName(lastName)
+                    .profilePicture(picture)
+                    .password("")
+                    .roles(Set.of(userRole))
                     .build();
 
-            GoogleIdToken idToken = verifier.verify(request.token());
-            if (idToken == null) {
-                return ResponseEntity.badRequest().body("Invalid Google token");
-            }
-
-            GoogleIdToken.Payload payload = idToken.getPayload();
-
-            if (!payload.getEmailVerified()) {
-                return ResponseEntity.badRequest().body("Google email not verified");
-            }
-
-            String email    = payload.getEmail();
-            String name     = (String) payload.get("name");
-            String picture  = (String) payload.get("picture");
-            String googleId = payload.getSubject();
-
-            User user;
-
-            // 1. Known Google user — fastest path
-            User byGoogleId = userRepository.findByGoogleId(googleId);
-            if (byGoogleId != null) {
-                user = byGoogleId;
-
-                // 2. Email already exists — link Google to that account
-            } else {
-                User byEmail = userRepository.findByEmail(email);
-                if (byEmail != null) {
-                    byEmail.setGoogleId(googleId);
-                    if (byEmail.getProfilePicture() == null) {
-                        byEmail.setProfilePicture(picture);
-                    }
-                    user = userRepository.save(byEmail);
-
-                    // 3. Brand new user
-                } else {
-                    Role userRole = roleRepository.findByRole("ROLE_USER")
-                            .orElseThrow(() -> new RuntimeException("Default role not found"));
-
-                    String firstName = name != null ? name.split(" ")[0] : "";
-                    String lastName  = name != null && name.contains(" ") ? name.split(" ", 2)[1] : "";
-
-                    User newUser = User.builder()
-                            .email(email)
-                            .username(email)
-                            .googleId(googleId)
-                            .firstName(firstName)
-                            .lastName(lastName)
-                            .profilePicture(picture)
-                            .password("")
-                            .roles(Set.of(userRole))
-                            .build();
-
-                    user = userRepository.save(newUser);
-                }
-            }
-
-            String jwt = jwtUtils.generateToken(user.getUsername());
-            response.addHeader("Set-Cookie", CookieUtils.createJwtCookie(jwt).toString());
-
-            return ResponseEntity.ok(new LoginResponse("Google login successful", jwt, user.getUsername()));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body("Google login failed: " + e.getMessage());
+            user = userRepository.save(newUser);
         }
+
+        String jwt = jwtUtils.generateToken(user.getUsername());
+        response.addHeader("Set-Cookie", CookieUtils.createJwtCookie(jwt).toString());
+
+        return ResponseEntity.ok(new LoginResponse("Google login successful", jwt, user.getUsername()));
     }
+
     /**
      * Logout by invalidating JWT cookie.
      */
     public ResponseEntity<String> logout(HttpServletResponse response) {
-        boolean secure = false;
-        String profile = System.getProperty("spring.profiles.active");
-        if (profile == null) profile = System.getenv("SPRING_PROFILES_ACTIVE");
-        if (profile != null && (profile.contains("prod") || profile.contains("production"))) {
-            secure = true;
-        }
-
-        ResponseCookie expiredCookie = ResponseCookie.from("access_token", "")
-                .httpOnly(true)
-                .secure(secure)
-                .path("/")
-                .maxAge(0)
-                .build();
-
-        response.addHeader("Set-Cookie", expiredCookie.toString());
+        response.addHeader("Set-Cookie", CookieUtils.clearJwtCookie().toString());
         return ResponseEntity.ok("Logged out");
     }
 

@@ -72,12 +72,25 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
     }
 
-    // Generic fallback
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleAll(Exception ex) {
-        ErrorResponse body = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Internal server error: " + ex.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+    // Invalid / unverifiable Google ID token
+    @ExceptionHandler(InvalidGoogleTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidGoogleToken(InvalidGoogleTokenException ex) {
+        ErrorResponse body = new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
+    }
+
+    // Google account email not verified
+    @ExceptionHandler(GoogleEmailNotVerifiedException.class)
+    public ResponseEntity<ErrorResponse> handleGoogleEmailNotVerified(GoogleEmailNotVerifiedException ex) {
+        ErrorResponse body = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    // Existing email account found during Google login — manual linking required
+    @ExceptionHandler(GoogleAccountLinkRequiredException.class)
+    public ResponseEntity<ErrorResponse> handleGoogleAccountLinkRequired(GoogleAccountLinkRequiredException ex) {
+        ErrorResponse body = new ErrorResponse(HttpStatus.CONFLICT.value(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 
     @ExceptionHandler(GoogleAccountAlreadyLinked.class)
@@ -89,5 +102,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse>  handleGoogleLinkedAccount (GoogleAccountAlreadyLinkedException ex){
         ErrorResponse body = new ErrorResponse(HttpStatus.CONFLICT.value(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
+
+    // Generic fallback
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleAll(Exception ex) {
+        ErrorResponse body = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Internal server error: " + ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
 }

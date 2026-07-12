@@ -1,5 +1,8 @@
 package bg.emiliyan.acc_backend.dtos;
 
+import bg.emiliyan.acc_backend.configs.AuthProvider;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.*;
 
 import java.util.List;
@@ -22,4 +25,7 @@ public class UserDTO {
     private String firstName;
     private String lastName;
     private boolean googleLinked;
+    @Enumerated(EnumType.STRING)
+    private AuthProvider authProvider;
+
 }

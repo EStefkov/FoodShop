@@ -1,5 +1,8 @@
 package bg.emiliyan.acc_backend.dtos;
 
+import bg.emiliyan.acc_backend.configs.AuthProvider;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
@@ -27,4 +30,7 @@ public class UpdateUserDTO {
     private String profilePicture;
     private String firstName;
     private String lastName;
+    private String location;
+    @Enumerated(EnumType.STRING)
+    private AuthProvider authProvider;
 }

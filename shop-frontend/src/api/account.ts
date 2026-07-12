@@ -20,6 +20,7 @@ export interface UserDTO {
   firstName: string;
   lastName: string;
   googleLinked: boolean; 
+  authProvider: string;
 }
 
 interface LoginCredentials {

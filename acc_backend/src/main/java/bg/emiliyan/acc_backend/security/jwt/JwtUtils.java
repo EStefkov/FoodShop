@@ -1,4 +1,4 @@
-package bg.emiliyan.acc_backend.security;
+package bg.emiliyan.acc_backend.security.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -56,5 +56,7 @@ public class JwtUtils {
             return false;
         }
     }
+
+
 
 }

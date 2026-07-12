@@ -1,5 +1,8 @@
 package bg.emiliyan.acc_backend.dtos;
 
+import bg.emiliyan.acc_backend.configs.AuthProvider;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.*;
 
 import java.util.List;
@@ -23,4 +26,6 @@ public class GetAllUserDTO {
     private String firstName;
     private String lastName;
     private java.sql.Timestamp createdAt;
+    @Enumerated(EnumType.STRING)
+    private AuthProvider authProvider;
 }

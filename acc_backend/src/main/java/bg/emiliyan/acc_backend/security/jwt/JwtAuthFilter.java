@@ -1,5 +1,6 @@
-package bg.emiliyan.acc_backend.security;
+package bg.emiliyan.acc_backend.security.jwt;
 
+import bg.emiliyan.acc_backend.security.cookie.CookieUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

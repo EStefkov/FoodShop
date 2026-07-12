@@ -1,5 +1,8 @@
 package bg.emiliyan.acc_backend.dtos;
 
+import bg.emiliyan.acc_backend.configs.AuthProvider;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -49,4 +52,6 @@ public class RegisterUserDTO {
     @Pattern(regexp = "\\d{4}", message = "Postal code must be 4 digits")
     private String postalCode;
     private String profilePicture;
+    @Enumerated(EnumType.STRING)
+    private AuthProvider authProvider;
 }

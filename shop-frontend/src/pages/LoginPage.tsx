@@ -10,19 +10,18 @@ export const LoginPage = () => {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const { setUser } = useAuth();
+  const { refreshUser } = useAuth();
   const navigate = useNavigate();
+  
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     try {
-      const res = await account.login(identifier, password);
-      setUser({
-        username: res.data.username,
-        token: res.data.token,
-        loginMethod: 'password',
-      });
+       await account.login(identifier, password);
+
+       await refreshUser();
+
       navigate('/profile');
     } catch {
       setError('Login failed. Please check your credentials.');

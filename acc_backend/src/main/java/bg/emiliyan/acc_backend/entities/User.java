@@ -1,5 +1,6 @@
 package bg.emiliyan.acc_backend.entities;
 
+import bg.emiliyan.acc_backend.configs.AuthProvider;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -35,6 +36,11 @@ public class User {
     private String lastName;
     @CreationTimestamp
     private Timestamp createdAt;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "auth_provider")
+    private AuthProvider authProvider;
+
+
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))

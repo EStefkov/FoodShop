@@ -47,6 +47,7 @@ public class UserService {
                         .firstName(user.getFirstName())
                         .lastName(user.getLastName())
                         .createdAt(user.getCreatedAt())
+                        .authProvider(user.getAuthProvider())
                         .build()
                 );
     }
@@ -129,6 +130,7 @@ public class UserService {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .googleLinked(user.getGoogleId() != null)
+                .authProvider(user.getAuthProvider())
                 .build();
     }
     public UserDTO getUserByUsername(String username) {
@@ -184,6 +186,7 @@ public class UserService {
                 .profilePicture(user.getProfilePicture())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
+                .authProvider(user.getAuthProvider())
                 .build();
     }
 

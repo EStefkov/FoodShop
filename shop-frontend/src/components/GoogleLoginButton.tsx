@@ -10,17 +10,18 @@ interface Props {
 export const GoogleLoginButton = ({ clientId }: Props) => {
   const { setUser } = useAuth();
   const navigate = useNavigate();
+  const {refreshUser} = useAuth();
 
   const handleSuccess = async (credentialResponse: CredentialResponse) => {
     if (!credentialResponse.credential) return;
+
     try {
-      const res = await account.googleLogin(credentialResponse.credential);
-      setUser({
-        username: res.data.username,
-        token: res.data.token,
-        loginMethod: 'google',
-      });
+      await account.googleLogin(credentialResponse.credential);
+      
+      await refreshUser();
+
       navigate('/profile');
+
     } catch (err) {
       console.error('Google login error:', err);
     }
